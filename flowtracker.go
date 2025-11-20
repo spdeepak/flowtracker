@@ -127,6 +127,7 @@ func NewMiddleware(opts ...Option) func(http.Handler) http.Handler {
 					// Wrap in anonymous func to handle panics individually
 					func(e Exporter) {
 						defer func() {
+							// With this recover() logic inside the loop: If one of the multiple exporters are down, then this won't stop the other exporters from working
 							if r := recover(); r != nil {
 								fmt.Printf("FlowTracker Exporter Panic: %v\n", r)
 							}
