@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"math/rand"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 )
@@ -34,7 +32,7 @@ type Trace struct {
 }
 
 // ---------------------------------------------------------
-// 2. Exporter Interface & Default Implementations
+// 2. Exporter Interface & Default Implementation
 // ---------------------------------------------------------
 
 // Exporter defines how the Trace data is handled when a request finishes.
@@ -49,41 +47,6 @@ func (c *ConsoleExporter) Export(tr *Trace) {
 	b, _ := json.Marshal(tr)
 	fmt.Printf("FLOW_LOG: %s\n", string(b))
 }
-
-// SlogExporter -- Default Impl 2: Console Exporter (JSON to Stdout) --
-type SlogExporter struct{}
-
-func (c *SlogExporter) Export(tr *Trace) {
-	b, _ := json.Marshal(tr)
-	slog.Info("Flow log", slog.Any("trace", b))
-}
-
-// FileExporter -- Default Impl 3: File Exporter (Append to a file) --
-type FileExporter struct {
-	Filename string
-}
-
-func (f *FileExporter) Export(tr *Trace) {
-	b, _ := json.Marshal(tr)
-	// Open file in append mode, create if not exists
-	file, err := os.OpenFile(f.Filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		fmt.Printf("Error writing trace to file: %v\n", err)
-		return
-	}
-	defer file.Close()
-	if _, err := file.Write(b); err != nil {
-		fmt.Printf("Error writing trace to file: %v\n", err)
-	}
-	if _, err := file.WriteString("\n"); err != nil {
-		fmt.Printf("Error writing newline to file: %v\n", err)
-	}
-}
-
-// NoOpExporter -- Default Impl 4: NoOp Exporter (Does nothing, for testing) --
-type NoOpExporter struct{}
-
-func (n *NoOpExporter) Export(tr *Trace) {}
 
 // ---------------------------------------------------------
 // 3. Configuration Options
