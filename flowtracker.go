@@ -53,15 +53,15 @@ func (c *ConsoleExporter) Export(tr *Trace) {
 // ---------------------------------------------------------
 
 type config struct {
-	exporter Exporter
+	exporters []Exporter
 }
 
 type Option func(*config)
 
-// WithExporter allows the user to inject a custom or default exporter
-func WithExporter(e Exporter) Option {
+// WithExporter allows the user to inject a custom or default exporters
+func WithExporter(e ...Exporter) Option {
 	return func(c *config) {
-		c.exporter = e
+		c.exporters = append(c.exporters, e...)
 	}
 }
 
@@ -78,9 +78,8 @@ const (
 
 // NewMiddleware creates the handler wrapper with the provided options
 func NewMiddleware(opts ...Option) func(http.Handler) http.Handler {
-	// Default configuration
 	cfg := &config{
-		exporter: &ConsoleExporter{}, // Default to console if nothing passed
+		exporters: make([]Exporter, 0),
 	}
 
 	// Apply user options
@@ -88,9 +87,14 @@ func NewMiddleware(opts ...Option) func(http.Handler) http.Handler {
 		opt(cfg)
 	}
 
+	// If no exporters were provided, add the default console exporter
+	if len(cfg.exporters) == 0 {
+		cfg.exporters = append(cfg.exporters, &ConsoleExporter{})
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Initialize Trace
+			// 1. Initialize Trace
 			traceID := fmt.Sprintf("trace-%d-%d", time.Now().UnixNano(), rand.Intn(1000))
 			rootSpan := &Span{
 				ID:        fmt.Sprintf("%d", rand.Intn(100000)),
@@ -104,19 +108,33 @@ func NewMiddleware(opts ...Option) func(http.Handler) http.Handler {
 				Spans:   []*Span{rootSpan},
 			}
 
-			// Inject into Context
+			// 2. Inject into Context
 			ctx := context.WithValue(r.Context(), traceKey, tr)
 			ctx = context.WithValue(ctx, parentSpanKey, rootSpan.ID)
 
-			// Serve Request
+			// 3. Serve Request
 			next.ServeHTTP(w, r.WithContext(ctx))
 
-			// Finalize Root Span
+			// 4. Finalize Root Span
 			rootSpan.EndTime = time.Now()
 			rootSpan.Duration = rootSpan.EndTime.Sub(rootSpan.StartTime).Milliseconds()
 
-			// Export Data (Run in goroutine to avoid blocking the API response)
-			go cfg.exporter.Export(tr)
+			// 5. Export to ALL registered exporters
+			// We run this in a goroutine so we don't block the API response
+			go func() {
+				// Loop through the slice and call Export on each
+				for _, exp := range cfg.exporters {
+					// Wrap in anonymous func to handle panics individually
+					func(e Exporter) {
+						defer func() {
+							if r := recover(); r != nil {
+								fmt.Printf("FlowTracker Exporter Panic: %v\n", r)
+							}
+						}()
+						e.Export(tr)
+					}(exp)
+				}
+			}()
 		})
 	}
 }

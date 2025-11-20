@@ -13,7 +13,7 @@ func main() {
 	mux.HandleFunc("/", examples.Handler)
 
 	slogExporter := exporters.SankeyExporter{}
-	mw := flowtracker.NewMiddleware(flowtracker.WithExporter(&slogExporter))
+	mw := flowtracker.NewMiddleware(flowtracker.WithExporter(&slogExporter), flowtracker.WithExporter(&exporters.SlogExporter{}))
 
 	http.ListenAndServe(":8080", mw(mux))
 }
