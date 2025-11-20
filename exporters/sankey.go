@@ -48,11 +48,14 @@ func (s *SankeyExporter) Export(tr *flowtracker.Trace) {
 		spanNames[span.ID] = name
 	}
 
-	var output []string
+	// 2. Use strings.Builder to construct the output block
+	var sb strings.Builder
 
-	// 2. Build the links: Parent [Duration] Child
+	if !s.CleanOutput {
+		sb.WriteString(fmt.Sprintf("\n----- START SANKEY DATA (trace id: %s)----\n", tr.TraceID))
+	}
+
 	for _, span := range tr.Spans {
-		// Skip the root node acting as a child (it has no parent)
 		if span.ParentID == "" {
 			continue
 		}
@@ -61,24 +64,16 @@ func (s *SankeyExporter) Export(tr *flowtracker.Trace) {
 		if !ok {
 			parentName = "Unknown"
 		}
-
 		currentName := spanNames[span.ID]
 
-		// Sankey Format: Source [Weight] Target
-		line := fmt.Sprintf("%s [%d] %s", parentName, span.Duration, currentName)
-		output = append(output, line)
-	}
-
-	// 3. Print the result
-	if !s.CleanOutput {
-		fmt.Printf("\n----- START SANKEY DATA (trace id: %s)----\n", tr.TraceID)
-	}
-
-	for _, line := range output {
-		fmt.Println(line)
+		// Format: Source [Weight] Target\n
+		sb.WriteString(fmt.Sprintf("%s [%d] %s\n", parentName, span.Duration, currentName))
 	}
 
 	if !s.CleanOutput {
-		fmt.Printf("----- END SANKEY DATA (trace id: %s)----\n", tr.TraceID)
+		sb.WriteString(fmt.Sprintf("----- END SANKEY DATA (trace id: %s)----\n", tr.TraceID))
 	}
+
+	// 3. Print everything in one atomic operation
+	fmt.Print(sb.String())
 }
