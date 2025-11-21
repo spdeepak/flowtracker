@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/spdeepak/flowtracker"
+	"github.com/spdeepak/flowtracker/examples"
 	otelexporter "github.com/spdeepak/flowtracker/otel"
 
 	"go.opentelemetry.io/otel"
@@ -54,6 +55,7 @@ func main() {
 
 		finish()
 		w.Write([]byte("Trace sent to Jaeger! Check http://localhost:16686"))
+		examples.Handler(w, r)
 	})
 
 	log.Println("Server running on :8080")
