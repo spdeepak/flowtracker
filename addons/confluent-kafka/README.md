@@ -102,6 +102,6 @@ The exporter sends data to Kafka in the following format:
 
 You can find a complete, runnable example of how to use this exporter in the main repository:
 
-👉 **[Click here for the Kafka Example Code](../../examples/kafka)**
+👉 **[Click here for the Kafka Example Code](../../examples/confluent-kafka)**
 
 *(Note: If the link above doesn't work, navigate to the `examples/kafka` directory in the repository root).*
