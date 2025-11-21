@@ -16,35 +16,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
-func initTracer() *sdktrace.TracerProvider {
-	// 1. Create an OTel Exporter (e.g., Stdout, OTLP, Jaeger)
-	//    Here we use Stdout for demonstration
-	exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// 2. Create Resource (Metadata about your app)
-	res, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceName("my-flowtracker-app"),
-		),
-	)
-
-	// 3. Create Tracer Provider
-	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(res),
-	)
-
-	// 4. Set as Global (Optional, but good practice)
-	otel.SetTracerProvider(tp)
-
-	return tp
-}
-
 func main() {
 	// Setup OTel
 	tp := initTracer()
@@ -73,4 +44,33 @@ func main() {
 
 	log.Println("Server running on :8080")
 	http.ListenAndServe(":8080", mw(mux))
+}
+
+func initTracer() *sdktrace.TracerProvider {
+	// 1. Create an OTel Exporter (e.g., Stdout, OTLP, Jaeger)
+	//    Here we use Stdout for demonstration
+	exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 2. Create Resource (Metadata about your app)
+	res, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName("my-flowtracker-app"),
+		),
+	)
+
+	// 3. Create Tracer Provider
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+	)
+
+	// 4. Set as Global (Optional, but good practice)
+	otel.SetTracerProvider(tp)
+
+	return tp
 }
