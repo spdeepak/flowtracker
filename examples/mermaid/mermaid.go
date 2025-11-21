@@ -12,8 +12,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", examples.Handler)
 
-	sankeyExporter := exporters.SankeyExporter{}
-	mw := flowtracker.NewMiddleware(flowtracker.WithExporter(&sankeyExporter), flowtracker.WithExporter(&exporters.SlogExporter{}))
+	slogExporter := exporters.MermaidExporter{}
+	mw := flowtracker.NewMiddleware(flowtracker.WithExporter(&slogExporter), flowtracker.WithExporter(&exporters.SlogExporter{}))
 
 	http.ListenAndServe(":8080", mw(mux))
 }
