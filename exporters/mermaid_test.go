@@ -27,7 +27,7 @@ func TestMermaidExporter_OK(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	server := NewServer(TopDown, []string{}, true)
+	server := NewServer("", []string{}, true)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
