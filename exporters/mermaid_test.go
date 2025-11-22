@@ -14,10 +14,10 @@ import (
 	"github.com/spdeepak/flowtracker"
 )
 
-func NewServer(orientation Orientation, tags []string) http.Handler {
+func NewServer(orientation Orientation, tags []string, includeAllTags bool) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Handler)
-	mw := flowtracker.NewMiddleware(flowtracker.WithExporter(&MermaidExporter{Orientation: orientation, IncludeTags: tags}))
+	mw := flowtracker.NewMiddleware(flowtracker.WithExporter(&MermaidExporter{Orientation: orientation, IncludeTags: tags, IncludeAllTags: includeAllTags}))
 	return mw(mux)
 }
 
@@ -27,7 +27,7 @@ func TestMermaidExporter_OK(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	server := NewServer(TopDown, []string{})
+	server := NewServer(TopDown, []string{}, true)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
@@ -96,7 +96,7 @@ func TestMermaidExporter_OK_IncludeTags(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	server := NewServer(LeftRight, []string{"db.query"})
+	server := NewServer(LeftRight, []string{"db.query"}, false)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()

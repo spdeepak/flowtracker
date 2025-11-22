@@ -14,8 +14,12 @@ type MermaidExporter struct {
 	Orientation Orientation
 
 	// IncludeTags defines a specific list of tags to append to the span name.
-	// All tags will be included if this is empty.
+	// Ignored if IncludeAllTags is true.
 	IncludeTags []string
+
+	// IncludeAllTags overrides IncludeTags. If true, ALL tags present
+	// in the span will be displayed in the diagram.
+	IncludeAllTags bool
 }
 
 type Orientation string
@@ -55,7 +59,14 @@ func (m *MermaidExporter) Export(tr *flowtracker.Trace) {
 			var keysToDisplay []string
 
 			// Logic: Decide which keys to show
-			if len(m.IncludeTags) > 0 {
+			if m.IncludeAllTags {
+				// Get ALL keys from the map
+				for k := range span.Tags {
+					keysToDisplay = append(keysToDisplay, k)
+				}
+				// Sort keys to ensure deterministic diagram output
+				sort.Strings(keysToDisplay)
+			} else if len(m.IncludeTags) > 0 {
 				// Get only user-specified keys
 				for _, k := range m.IncludeTags {
 					if _, exists := span.Tags[k]; exists {
@@ -63,13 +74,6 @@ func (m *MermaidExporter) Export(tr *flowtracker.Trace) {
 					}
 				}
 				// No need to sort strict list, user order is preserved
-			} else {
-				// Get ALL keys from the map
-				for k := range span.Tags {
-					keysToDisplay = append(keysToDisplay, k)
-				}
-				// Sort keys to ensure deterministic diagram output
-				sort.Strings(keysToDisplay)
 			}
 
 			// Build the display string
