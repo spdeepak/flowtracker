@@ -2,6 +2,7 @@ package exporters
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/spdeepak/flowtracker"
@@ -16,6 +17,9 @@ type SankeyExporter struct {
 	// List of tag keys you want to display in the diagram.
 	// Example: []string{"db.table", "http.status_code"}
 	IncludeTags []string
+
+	// IncludeAllTags overrides IncludeTags. If true, ALL tags present
+	IncludeAllTags bool
 }
 
 func (s *SankeyExporter) Export(tr *flowtracker.Trace) {
@@ -30,7 +34,15 @@ func (s *SankeyExporter) Export(tr *flowtracker.Trace) {
 
 		// Check if user wants to see tags for this span
 		var tagSuffixes []string
-		if len(s.IncludeTags) > 0 && span.Tags != nil {
+		// Logic: Decide which keys to show
+		if s.IncludeAllTags {
+			// Get ALL keys from the map
+			for key, val := range span.Tags {
+				tagSuffixes = append(tagSuffixes, fmt.Sprintf("%s:%s", key, val))
+			}
+			// Sort keys to ensure deterministic diagram output
+			sort.Strings(tagSuffixes)
+		} else if len(s.IncludeTags) > 0 && span.Tags != nil {
 			for _, key := range s.IncludeTags {
 				if val, ok := span.Tags[key]; ok {
 					// Format: (key:value)
