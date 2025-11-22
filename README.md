@@ -1,5 +1,8 @@
 # FlowTracker
 
+![CI](https://github.com/spdeepak/flowtracker/actions/workflows/go.yml/badge.svg)
+[![codecov](https://codecov.io/gh/spdeepak/flowtracker/branch/main/graph/badge.svg)](https://codecov.io/gh/spdeepak/flowtracker)
+
 **FlowTracker** is a lightweight, thread-safe observability library for Golang microservices. It tracks the lifecycle of an API request as it flows through your application, capturing execution time, hierarchy, and metadata.
 
 Unlike full-blown distributed tracing solutions (like Jaeger/OpenTelemetry) which can be heavy to set up, FlowTracker is designed for **single-service internal flow analysis**. It produces hierarchical JSON data perfectly structured for generating **Sankey Diagrams**, **Gantt Charts**, or **Execution Trees**.
