@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -42,11 +41,10 @@ func TestDefaultExporter_OK(t *testing.T) {
 
 	// read logs
 	var buf bytes.Buffer
-	written, err := io.Copy(&buf, r)
+	_, err := io.Copy(&buf, r)
 	if err != nil {
 		t.Error("Error should be nil")
 	}
-	fmt.Println(written)
 
 	logs := buf.String()
 
