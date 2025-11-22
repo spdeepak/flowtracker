@@ -17,7 +17,7 @@ import (
 func NewServer() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Handler)
-	mw := NewMiddleware()
+	mw := NewMiddleware(WithExporter(&ConsoleExporter{}))
 	return mw(mux)
 }
 
