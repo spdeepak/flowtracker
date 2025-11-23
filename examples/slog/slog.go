@@ -12,6 +12,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", examples.Handler)
 
+	//handler := slog.NewJSONHandler(os.Stdout, nil)
+	//logger := slog.New(handler)
 	slogExporter := exporters.SlogExporter{}
 	mw := flowtracker.NewMiddleware(flowtracker.WithExporter(&slogExporter))
 

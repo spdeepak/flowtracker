@@ -8,9 +8,15 @@ import (
 )
 
 // SlogExporter -- log Exporter (JSON to log) --
-type SlogExporter struct{}
+type SlogExporter struct {
+	logger *slog.Logger
+}
 
-func (c *SlogExporter) Export(tr *flowtracker.Trace) {
+func (s *SlogExporter) Export(tr *flowtracker.Trace) {
 	b, _ := json.Marshal(tr)
-	slog.Info("Flow log", slog.Any("trace", b))
+	if s.logger != nil {
+		s.logger.Info("Flow log", slog.Any("trace", b))
+	} else {
+		slog.Info("Flow log", slog.Any("trace", b))
+	}
 }

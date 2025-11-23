@@ -33,7 +33,7 @@ func TestMermaidExporter_OK(t *testing.T) {
 
 	server.ServeHTTP(rr, req)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
 	// restore stdout
 	w.Close()
@@ -102,7 +102,7 @@ func TestMermaidExporter_OK_IncludeTags(t *testing.T) {
 
 	server.ServeHTTP(rr, req)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
 	// restore stdout
 	w.Close()
