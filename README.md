@@ -107,7 +107,7 @@ The output data is designed to be easily parsed for graphing.
 
 2.  **Grafana:**
     *   If using the `ConsoleExporter` combined with **Loki**, you can query logs for `{app="myapp"} |= "FLOW_LOG:"`.
-    *   If using a custom exporter, you can push directly to **Tempo** or **Jaeger**.
+    *   If using a `otel` addon, you can push directly to **Jaeger**. [Example](examples/otlp)
 
 ## ⚠️ Best Practices
 
